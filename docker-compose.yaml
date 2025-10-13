@@ -1,0 +1,42 @@
+---
+volumes:
+  mariadb-data: {}
+  ojs-cache: {}
+  ojs-files: {}
+  ojs-public: {}
+
+secrets:
+  DB_ROOT_PASSWORD:
+    file: ./secrets/DB_ROOT_PASSWORD
+  OJS_DB_PASSWORD:
+    file: ./secrets/OJS_DB_PASSWORD
+  OJS_API_KEY_SECRET:
+    file: ./secrets/OJS_API_KEY_SECRET
+  OJS_SALT:
+    file: ./secrets/OJS_SALT
+services:
+  ojs:
+    image: ghcr.io/libops/ojs:main
+    build: .
+    ports:
+      - 80:80
+    environment:
+      OJS_DB_HOST: mariadb
+      OJS_DB_USER: ojs
+    secrets:
+      - source: DB_ROOT_PASSWORD
+      - source: OJS_API_KEY_SECRET
+      - source: OJS_DB_PASSWORD
+      - source: OJS_SALT
+    volumes:
+      - ojs-cache:/var/www/ojs/cache:rw
+      - ojs-files:/var/www/files:rw
+      - ojs-public:/var/www/ojs/public:rw
+    depends_on:
+      - mariadb
+  mariadb:
+    image: islandora/mariadb:6.0.1@sha256:335df4225634f14095b337847e541d65b5abfa2fe051c7e2b93fae447cac1e58
+    volumes:
+      - mariadb-data:/var/lib/mysql:rw
+    secrets:
+      - source: DB_ROOT_PASSWORD
