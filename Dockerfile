@@ -22,7 +22,7 @@ RUN apk add --no-cache \
     && cleanup.sh
 
 RUN git clone https://github.com/pkp/ojs.git . \
-    && git checkout ${OJS_VERSION} \
+    && git checkout "${OJS_VERSION}" \
     && git submodule update --init --recursive \
     && rm -rf .github tests docs \
     && composer -d lib/pkp install \
@@ -32,7 +32,7 @@ RUN git clone https://github.com/pkp/ojs.git . \
     # modify composer.json to be at least a week old so we can run composer install for contrib plugins
     && NOW=$(date +%s) \
     && SEVEN_DAYS_AGO=$((NOW - 604800)) \
-    && OLDDATE=$(date -d @${SEVEN_DAYS_AGO} +%Y%m%d%H%M.%S) \
+    && OLDDATE=$(date -d @"${SEVEN_DAYS_AGO}" +%Y%m%d%H%M.%S) \
     && find /var/www/ojs/plugins -type f -name "composer.json" -exec touch -t "$OLDDATE" {} \;
 
 RUN npm install \
