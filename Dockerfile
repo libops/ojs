@@ -7,18 +7,27 @@ EXPOSE 80
 WORKDIR /var/www/ojs
 
 ARG \
+    # renovate: datasource=repology depName=alpine_3_22/antiword
+    ANTIWORD_VERSION=0.37-r6 \
+    # renovate: datasource=repology depName=alpine_3_22/ghostscript
+    GHOSTSCRIPT_VERSION=10.05.1-r0 \
     # renovate: datasource=repology depName=alpine_3_22/npm
     NPM_VERSION=11.3.0-r1 \
     # renovate: datasource=github-tags depName=ojs packageName=pkp/ojs
     OJS_VERSION=3_5_0-1 \
     # renovate: datasource=repology depName=alpine_3_22/php83
-    PHP_VERSION=8.3.26-r0
+    PHP_VERSION=8.3.26-r0 \
+    # renovate: datasource=repology depName=alpine_3_22/poppler-utils
+    POPPLER_VERSION=25.04.0-r0
 
 RUN apk add --no-cache \
+    antiword=="${ANTIWORD_VERSION}" \
+    ghostscript=="${GHOSTSCRIPT_VERSION}" \
     npm=="${NPM_VERSION}" \
     php83-bcmath=="${PHP_VERSION}" \
     php83-ftp=="${PHP_VERSION}" \
     php83-gettext=="${PHP_VERSION}" \
+    poppler-utils=="${POPPLER_VERSION}" \
     && cleanup.sh
 
 RUN git clone https://github.com/pkp/ojs.git . \
@@ -42,13 +51,15 @@ RUN npm install \
 RUN chown -R nginx:nginx /var/www/ojs
 
 ENV \
-    OJS_DB_HOST=mariadb \
-    OJS_DB_PORT=3306 \
-    OJS_DB_NAME=ojs \
-    OJS_DB_USER=changeme \
-    OJS_DB_PASSWORD=changeme \
+    DB_HOST=mariadb \
+    DB_PORT=3306 \
+    DB_NAME=ojs \
+    DB_USER=ojs \
+    DB_PASSWORD=changeme \
     OJS_SALT=changeme \
     OJS_API_KEY_SECRET=changeme \
+    OJS_SECRET_KEY=changeme \
+    OJS_BASE_URL=http://localhost \
     OJS_ADMIN_USERNAME=admin \
     OJS_ADMIN_EMAIL=admin@localhost \
     OJS_ADMIN_PASSWORD=changeme \
@@ -57,6 +68,8 @@ ENV \
     OJS_FILES_DIR=/var/www/files \
     OJS_OAI_REPOSITORY_ID=ojs.localhost \
     OJS_ENABLE_BEACON=1 \
+    OJS_SESSION_LIFETIME=30 \
+    OJS_X_FORWARDED_FOR=Off \
     # see https://github.com/Islandora-Devops/isle-buildkit/tree/main/nginx#nginx-settings
     PHP_MAX_EXECUTION_TIME=300 \
     PHP_MAX_INPUT_TIME=300 \

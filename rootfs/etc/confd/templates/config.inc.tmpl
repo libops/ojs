@@ -26,14 +26,14 @@
 
 ; An application-specific key that is required for the app to run
 ; Internally this is used for any encryption (specifically cookie encryption if enabled)
-app_key =
+app_key = {{ getenv "OJS_SECRET_KEY" }}
 
 ; Set this to On once the system has been installed
 ; (This is generally done automatically by the installer)
 installed = Off
 
 ; The canonical URL to the OJS installation (excluding the trailing slash)
-base_url = "http://localhost"
+base_url = "{{ getenv "OJS_BASE_URL" }}"
 
 ; Enable strict mode. This will more aggressively cause errors/warnings when
 ; deprecated behaviour exists in the codebase.
@@ -47,7 +47,7 @@ session_cookie_name = OJSSID
 
 ; Number of days to save login cookie for if user selects to remember
 ; (set to 0 to force expiration at end of current session)
-session_lifetime = 30
+session_lifetime = {{ getenv "OJS_SESSION_LIFETIME" }}
 
 ; SameSite configuration for the cookie, see possible values and explanations
 ; at https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
@@ -59,7 +59,7 @@ session_samesite = Lax
 ; time zones.
 ; I.e.: "Europe/Amsterdam"
 ; time_zone="Europe/Amsterdam"
-time_zone = "UTC"
+time_zone = "{{ getenv "OJS_TIMEZONE" }}"
 
 ; Short and long date formats
 date_format_short = "Y-m-d"
@@ -96,13 +96,21 @@ restful_urls = On
 ; An empty string indicates that all hosts should be trusted (not recommended!)
 ; Example:
 ; allowed_hosts = '["myjournal.tld", "anotherjournal.tld", "mylibrary.tld"]'
-allowed_hosts = '["localhost"]'
+{{- $url := getenv "OJS_BASE_URL" -}}
+
+{{- $temp    := replace $url  "https://" "" -1 -}}
+{{- $cleaned := replace $temp "http://"  "" -1 -}}
+
+{{- $host  := index (split $cleaned "/") 0 -}}
+{{- $domain := index (split $host    ":") 0 -}}
+allowed_hosts = '["localhost", "{{ $domain }}"]'
+
 
 ; Allow the X_FORWARDED_FOR header to override the REMOTE_ADDR as the source IP
 ; Set this to "On" if you are behind a reverse proxy and you control the
 ; X_FORWARDED_FOR header.
 ; Warning: This defaults to "On" if unset for backwards compatibility.
-trust_x_forwarded_for = Off
+trust_x_forwarded_for = {{ getenv "OJS_X_FORWARDED_FOR" }}
 
 ; Display a message on the site admin and journal manager user home pages if there is an upgrade available
 show_upgrade_warning = On
@@ -113,7 +121,7 @@ enable_minified = On
 
 ; Provide a unique site ID and OAI base URL to PKP for statistics and security
 ; alert purposes only.
-enable_beacon = On
+enable_beacon = {{ if getenv "OJS_ENABLE_BEACON" }}On{{ else }}Off{{ end }}
 
 ; Set this to "On" if you would like to only have a single, site-wide Privacy
 ; Statement, rather than a separate Privacy Statement for each journal. Setting
@@ -139,13 +147,13 @@ sandbox = Off
 [database]
 
 driver = mysqli
-host = {{ getenv "OJS_DB_HOST" }}
-username = {{ getenv "OJS_DB_USER" }}
-password = {{ getenv "OJS_DB_PASSWORD" }}
-name = {{ getenv "OJS_DB_NAME" }}
+host = {{ getenv "DB_HOST" }}
+username = {{ getenv "DB_USER" }}
+password = {{ getenv "DB_PASSWORD" }}
+name = {{ getenv "DB_NAME" }}
+port = {{ getenv "DB_PORT" }}
 
 ; Set the non-standard port and/or socket, if used
-; port = 3306
 ; unix_socket = /var/run/mysqld/mysqld.sock
 
 ; Database collation
@@ -208,7 +216,7 @@ connection_charset = utf8
 ; Complete path to directory to store uploaded files
 ; (This directory should not be directly web-accessible)
 ; Windows users should use forward slashes
-files_dir = files
+files_dir = {{ getenv "OJS_FILES_DIR" }}
 
 ; Path to the directory to store public uploaded files
 ; (This directory should be web-accessible and the specified path
@@ -379,14 +387,14 @@ results_per_keyword = 500
 
 ; PDF
 ; index[application/pdf] = "/usr/bin/pstotext -enc UTF-8 -nopgbrk %s - | /usr/bin/tr '[:cntrl:]' ' '"
-; index[application/pdf] = "/usr/bin/pdftotext -enc UTF-8 -nopgbrk %s - | /usr/bin/tr '[:cntrl:]' ' '"
+index[application/pdf] = "/usr/bin/pdftotext -enc UTF-8 -nopgbrk %s - | /usr/bin/tr '[:cntrl:]' ' '"
 
 ; PostScript
 ; index[application/postscript] = "/usr/bin/pstotext -enc UTF-8 -nopgbrk %s - | /usr/bin/tr '[:cntrl:]' ' '"
-; index[application/postscript] = "/usr/bin/ps2ascii %s | /usr/bin/tr '[:cntrl:]' ' '"
+index[application/postscript] = "/usr/bin/ps2ascii %s | /usr/bin/tr '[:cntrl:]' ' '"
 
 ; Microsoft Word
-; index[application/msword] = "/usr/bin/antiword %s"
+index[application/msword] = "/usr/bin/antiword %s"
 ; index[application/msword] = "/usr/bin/catdoc %s"
 
 
@@ -401,7 +409,7 @@ oai = On
 
 ; OAI Repository identifier. This setting forms part of OAI-PMH record IDs.
 ; Changing this setting may affect existing clients and is not recommended.
-repository_id = ojs.pkp.sfu.ca
+repository_id = {{ getenv "OJS_OAI_REPOSITORY_ID" }}
 
 ; Maximum number of records per request to serve via OAI
 oai_max_records = 100
