@@ -27,13 +27,14 @@ The installation will run automatically on first startup. The default admin cred
 
 | Environment Variable | Default | Source | Description |
 | :------------------- | :------ | :----- | :---------- |
-| OJS_DB_HOST | mariadb | environment | MariaDB/MySQL hostname |
-| OJS_DB_PORT | 3306 | environment | MariaDB/MySQL port |
-| OJS_DB_NAME | ojs | environment | Database name |
-| OJS_DB_USER | ojs | environment | Database user |
-| OJS_DB_PASSWORD | (generated) | secret | Database password (stored in `./secrets/OJS_DB_PASSWORD`) |
+| DB_HOST | mariadb | environment | MariaDB/MySQL hostname |
+| DB_PORT | 3306 | environment | MariaDB/MySQL port |
+| DB_NAME | ojs | environment | Database name |
+| DB_USER | ojs | environment | Database user |
+| DB_PASSWORD | (generated) | secret | Database password (stored in `./secrets/OJS_DB_PASSWORD`) |
 | OJS_SALT | (generated) | secret | Salt for password hashing (stored in `./secrets/OJS_SALT`) |
 | OJS_API_KEY_SECRET | (generated) | secret | Secret for API key encoding (stored in `./secrets/OJS_API_KEY_SECRET`) |
+| OJS_SECRET_KEY | (generated) | secret | Internally this is used for any encryption (specifically cookie encryption if enabled) (stored in `./secrets/OJS_SECRET_KEY`) |
 | OJS_ADMIN_USERNAME | admin | environment | Initial admin username |
 | OJS_ADMIN_EMAIL | admin@example.com | environment | Initial admin email |
 | OJS_ADMIN_PASSWORD | (generated) | secret | Initial admin password (stored in `./secrets/OJS_ADMIN_PASSWORD`) |
@@ -42,6 +43,8 @@ The installation will run automatically on first startup. The default admin cred
 | OJS_FILES_DIR | /var/www/files | environment | Directory for uploaded files |
 | OJS_OAI_REPOSITORY_ID | ojs.localhost | environment | OAI-PMH repository identifier |
 | OJS_ENABLE_BEACON | 1 | environment | Enable PKP usage statistics beacon (1=enabled, 0=disabled) |
+| OJS_SESSION_LIFETIME | 30 | environment | How long to stay logged in (in days) |
+| OJS_X_FORWARDED_FOR | Off | environment | Trust X-Forwarded-For header. Enable PKP usage statistics beacon (Off, On) |
 
 ### Nginx and PHP Settings
 

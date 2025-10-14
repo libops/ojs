@@ -5,20 +5,20 @@ set -eou pipefail
 
 function mysql_create_database {
     cat <<-EOF | create-database.sh
-CREATE DATABASE IF NOT EXISTS ${OJS_DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE USER IF NOT EXISTS '${OJS_DB_USER}'@'%' IDENTIFIED BY '${OJS_DB_PASSWORD}';
-GRANT ALL PRIVILEGES ON ${OJS_DB_NAME}.* to '${OJS_DB_USER}'@'%';
+CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* to '${DB_USER}'@'%';
 FLUSH PRIVILEGES;
 
-SET PASSWORD FOR ${OJS_DB_USER}@'%' = PASSWORD('${OJS_DB_PASSWORD}')
+SET PASSWORD FOR ${DB_USER}@'%' = PASSWORD('${DB_PASSWORD}')
 EOF
 }
 
 function check_ojs_installed {
     # Check if OJS database tables exist
     # Query the database for one of the core OJS tables (journals table)
-    mysql -h"${OJS_DB_HOST}" -u"${OJS_DB_USER}" -p"${OJS_DB_PASSWORD}" "${OJS_DB_NAME}" \
+    mysql -h"${DB_HOST}" -u"${DB_USER}" -p"${DB_PASSWORD}" "${DB_NAME}" \
         -e "SELECT 1 FROM journals LIMIT 1" &>/dev/null
     return $?
 }
@@ -32,10 +32,10 @@ function install_ojs {
     form_data="${form_data}&timeZone=${OJS_TIMEZONE}"
     form_data="${form_data}&filesDir=${OJS_FILES_DIR}"
     form_data="${form_data}&databaseDriver=mysqli"
-    form_data="${form_data}&databaseHost=${OJS_DB_HOST}"
-    form_data="${form_data}&databaseUsername=${OJS_DB_USER}"
-    form_data="${form_data}&databasePassword=${OJS_DB_PASSWORD}"
-    form_data="${form_data}&databaseName=${OJS_DB_NAME}"
+    form_data="${form_data}&databaseHost=${DB_HOST}"
+    form_data="${form_data}&databaseUsername=${DB_USER}"
+    form_data="${form_data}&databasePassword=${DB_PASSWORD}"
+    form_data="${form_data}&databaseName=${DB_NAME}"
     form_data="${form_data}&oaiRepositoryId=${OJS_OAI_REPOSITORY_ID}"
     form_data="${form_data}&enableBeacon=${OJS_ENABLE_BEACON}"
     form_data="${form_data}&adminUsername=${OJS_ADMIN_USERNAME}"
@@ -53,7 +53,6 @@ function install_ojs {
         echo "=========================================="
         echo "OJS Installation Complete!"
         echo "=========================================="
-        chmod 440 /var/www/ojs/config.inc.php
         rm /tmp/ojs-install.log
     else
         echo "=========================================="
@@ -62,12 +61,11 @@ function install_ojs {
         cat /tmp/ojs-install.log
         echo "=========================================="
     fi
+    sed -i 's/installed = Off/installed = On/' /var/www/ojs/config.inc.php
+    chmod 440 /var/www/ojs/config.inc.php
 }
 
 function main {
-    export DB_HOST=${OJS_DB_HOST}
-    export DB_PORT=${OJS_DB_PORT}
-
     mysql_create_database
 
     # wait for nginx
