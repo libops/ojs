@@ -1,4 +1,4 @@
-FROM islandora/nginx:6.0.1@sha256:20d8b36e812c60bfabccdbfbee0f40d46733df921a4ea9de0a2fa943f88f4fb5
+FROM islandora/nginx:6.0.4@sha256:b6511d412d3b249c4091c2e586912db1305fbe4e3536316fb6c19e1f86766de1
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
@@ -14,9 +14,9 @@ ARG \
     # renovate: datasource=repology depName=alpine_3_22/npm
     NPM_VERSION=11.3.0-r1 \
     # renovate: datasource=github-tags depName=ojs packageName=pkp/ojs
-    OJS_VERSION=3_5_0-1 \
+    OJS_VERSION=3_5_0rc2 \
     # renovate: datasource=repology depName=alpine_3_22/php83
-    PHP_VERSION=8.3.26-r0 \
+    PHP_VERSION=8.3.27-r0 \
     # renovate: datasource=repology depName=alpine_3_22/poppler-utils
     POPPLER_VERSION=25.04.0-r0
 
