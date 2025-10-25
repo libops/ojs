@@ -15,6 +15,11 @@ SET PASSWORD FOR ${DB_USER}@'%' = PASSWORD('${DB_PASSWORD}')
 EOF
 }
 
+function set_ojs_installed {
+    sed -i 's/installed = Off/installed = On/' /var/www/ojs/config.inc.php
+    chmod 440 /var/www/ojs/config.inc.php
+}
+
 function check_ojs_installed {
     # Check if OJS database tables exist
     # Query the database for one of the core OJS tables (journals table)
@@ -61,8 +66,7 @@ function install_ojs {
         cat /tmp/ojs-install.log
         echo "=========================================="
     fi
-    sed -i 's/installed = Off/installed = On/' /var/www/ojs/config.inc.php
-    chmod 440 /var/www/ojs/config.inc.php
+    set_ojs_installed
 }
 
 function main {
@@ -79,6 +83,7 @@ function main {
         echo "OJS installation started."
     else
         echo "OJS is already installed. Skipping installation."
+        set_ojs_installed
     fi
 }
 main
