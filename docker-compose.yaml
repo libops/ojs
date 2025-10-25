@@ -28,6 +28,7 @@ services:
       - ./scripts:/scripts:ro
       - ./docker-compose.yaml:/docker-compose.yaml:ro
     command: /scripts/generate-secrets.sh
+    profiles: [none]
   ojs:
     image: ghcr.io/libops/ojs:main
     build: .
@@ -49,8 +50,6 @@ services:
       - ojs-files:/var/www/files:rw
       - ojs-public:/var/www/ojs/public:rw
     depends_on:
-      init:
-        condition: service_completed_successfully
       mariadb:
         condition: service_started
   mariadb:
@@ -59,6 +58,3 @@ services:
       - mariadb-data:/var/lib/mysql:rw
     secrets:
       - source: DB_ROOT_PASSWORD
-    depends_on:
-      init:
-        condition: service_completed_successfully
