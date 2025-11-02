@@ -70,6 +70,8 @@ ENV \
     OJS_ENABLE_BEACON=1 \
     OJS_SESSION_LIFETIME=30 \
     OJS_X_FORWARDED_FOR=Off \
+    OJS_SMTP_SERVER= \
+    OJS_SMTP_PORT=25 \
     # see https://github.com/Islandora-Devops/isle-buildkit/tree/main/nginx#nginx-settings
     PHP_MAX_EXECUTION_TIME=300 \
     PHP_MAX_INPUT_TIME=300 \

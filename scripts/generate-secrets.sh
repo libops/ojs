@@ -16,4 +16,3 @@ yq -r '.secrets[].file' docker-compose.yaml | uniq | while read -r SECRET; do
     (grep -ao "${CHARACTERS}" < /dev/urandom || true) | head "-${LENGTH}" | tr -d '\n' > "${SECRET}"
   fi
 done
-
