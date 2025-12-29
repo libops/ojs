@@ -3,7 +3,7 @@
 DOCKER_IMAGE=ghcr.io/libops/ojs:main
 
 deps:
-	docker compose pull
+	docker compose pull --ignore-buildable
 
 build: deps
 	docker compose build

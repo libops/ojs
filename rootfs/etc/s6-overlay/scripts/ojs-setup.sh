@@ -59,6 +59,7 @@ function install_ojs {
         echo "OJS Installation Complete!"
         echo "=========================================="
         rm /tmp/ojs-install.log
+        set_ojs_installed
     else
         echo "=========================================="
         echo "OJS Installation Failed!"
@@ -66,24 +67,21 @@ function install_ojs {
         cat /tmp/ojs-install.log
         echo "=========================================="
     fi
-    set_ojs_installed
 }
 
 function main {
-    mysql_create_database
-
     # wait for nginx
     if ! timeout 300 wait-for-open-port.sh localhost 80; then
       echo "Could not connect to nginx at localhost:80"
       exit 1
     fi
-
-    if ! check_ojs_installed; then
-        install_ojs &
-        echo "OJS installation started."
-    else
-        echo "OJS is already installed. Skipping installation."
-        set_ojs_installed
+    if [ "${DB_HOST}" = "mariadb" ]; then
+      mysql_create_database
+      install_ojs &
+      echo "OJS installation started."
+      exit 0
     fi
+
+    set_ojs_installed
 }
 main
