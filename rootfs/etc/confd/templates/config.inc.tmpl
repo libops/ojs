@@ -102,7 +102,7 @@ restful_urls = On
 {{- $cleaned := replace $temp "http://"  "" -1 -}}
 
 {{- $host  := index (split $cleaned "/") 0 -}}
-{{- $domain := index (split $host    ":") 0 -}}
+{{ $domain := index (split $host    ":") 0 }}
 allowed_hosts = '["localhost", "{{ $domain }}"]'
 
 
@@ -431,44 +431,12 @@ page_links = 10
 [captcha]
 
 ; Whether or not to enable ReCaptcha
-recaptcha = off
-
-; Public key for reCaptcha (see http://www.google.com/recaptcha)
-recaptcha_public_key = your_public_key
-
-; Private key for reCaptcha (see http://www.google.com/recaptcha)
-recaptcha_private_key = your_private_key
-
-; Whether or not to use Captcha on user registration
+recaptcha = {{ if getenv "RECAPTCHA_PUBLIC_KEY" }}on{{ else }}off{{ end }}
+recaptcha_public_key = {{ getenv "RECAPTCHA_PUBLIC_KEY" }}
+recaptcha_private_key = {{ getenv "RECAPTCHA_PRIVATE_KEY" }}
 captcha_on_register = on
-
-; Whether or not to use Captcha on user login
 captcha_on_login = on
-
-; Validate the hostname in the ReCaptcha response
 recaptcha_enforce_hostname = Off
-
-; ALTCHA is a free and open-source alternative to Google's ReCaptcha
-; The options below will manage all the required configurations used to
-; work with ALTCHA instead of ReCaptcha on system
-
-; Whether or not to enable ALTCHA
-altcha = off
-
-; Private key for ALTCHA
-altcha_hmackey = 'Example key'
-
-; Whether or not to use ALTCHA on user registration
-altcha_on_register = on
-
-; Whether or not to use ALTCHA on user login
-altcha_on_login = on
-
-; Whether or not to use ALTCHA on user lost password
-altcha_on_lost_password = on
-
-; The quantity of encryption cycles performed by the ALTCHA system
-altcha_encrypt_number = 10000
 
 ;;;;;;;;;;;;;;;;;;;;;
 ; External Commands ;

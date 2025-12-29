@@ -1,4 +1,6 @@
 ---
+networks:
+  default:
 volumes:
   mariadb-data: {}
   ojs-cache: {}
@@ -21,7 +23,7 @@ secrets:
 
 services:
   init:
-    image: islandora/base:6.0.10@sha256:00f16e56a20950f7b85e690b03c1e6e167625236bc77c56f4cd121dafd9ef578
+    image: islandora/base:6.2.3@sha256:010f7e422ad4563f91335106215a72c7485635b0a1125c651b4e76cb6d7efbd4
     restart: no
     volumes:
       - ./secrets:/secrets:rw
@@ -32,12 +34,16 @@ services:
   ojs:
     image: ghcr.io/libops/ojs:main
     build: .
+    networks:
+      - default
     ports:
       - 80:80
     environment:
       OJS_OAI_REPOSITORY_ID: ${DOMAIN:-localhost}
       OJS_ENABLE_BEACON: 1
       OJS_SMTP_SERVER: ${OJS_SMTP_SERVER:-}
+      OJS_ENABLE_HTTPS: "true"
+      OJS_BASE_URL: "https://${DOMAIN:-localhost}"
     secrets:
       - source: DB_ROOT_PASSWORD
       - source: OJS_API_KEY_SECRET
@@ -54,7 +60,9 @@ services:
       mariadb:
         condition: service_started
   mariadb:
-    image: islandora/mariadb:6.0.10@sha256:a89a1152abe0fc3d5de66d071b4391dd8f18e5f4883bfa32a82caf45a46d96da
+    image: islandora/mariadb:6.2.3@sha256:3c6e7cbed734310f4d9fea7a4f08e7e282ecb1a5e73aec0ab79b4167930380ab
+    networks:
+      - default
     volumes:
       - mariadb-data:/var/lib/mysql:rw
     secrets:
