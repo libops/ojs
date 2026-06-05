@@ -23,7 +23,7 @@ secrets:
 
 services:
   init:
-    image: islandora/base:6.2.3@sha256:010f7e422ad4563f91335106215a72c7485635b0a1125c651b4e76cb6d7efbd4
+    image: islandora/base:6.4.3@sha256:67331b4a0a3adf90216ee7e192013842790ddda61124ccdced18a35b7e8aace9
     restart: no
     volumes:
       - ./secrets:/secrets:rw
@@ -60,7 +60,7 @@ services:
       mariadb:
         condition: service_started
   mariadb:
-    image: islandora/mariadb:6.2.3@sha256:3c6e7cbed734310f4d9fea7a4f08e7e282ecb1a5e73aec0ab79b4167930380ab
+    image: islandora/mariadb:6.4.3@sha256:8f41414cba3286567e0590fa5428e2860e3351f13b1377666b1d362b01e6fe6e
     networks:
       - default
     volumes:
