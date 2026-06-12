@@ -1,55 +1,31 @@
-FROM islandora/nginx:6.2.3@sha256:1e85a1f0a222289a3079d5740ce8156d36c325c1f8477fb96806fa157cfb666b
+# syntax=docker/dockerfile:1.20.0
+ARG BASE_IMAGE=libops/ojs:php83
+FROM ${BASE_IMAGE}
 
-SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+ARG TARGETARCH
 
-EXPOSE 80
+ARG \
+    # renovate: datasource=custom.ojs depName=ojs
+    SOFTWARE_VERSION=3.5.0-3
+ARG FILE=ojs-${SOFTWARE_VERSION}.tar.gz
+ARG URL=https://pkp.sfu.ca/ojs/download/${FILE}
+ARG SHA256="af501e4f8d99af84d47c26eca3347400d94b3ace08806b5e30a7b6d0ce91e3e5"
 
 WORKDIR /var/www/ojs
 
-ARG \
-    # renovate: datasource=repology depName=alpine_3_22/antiword
-    ANTIWORD_VERSION=0.37-r6 \
-    # renovate: datasource=repology depName=alpine_3_22/ghostscript
-    GHOSTSCRIPT_VERSION=10.05.1-r0 \
-    # renovate: datasource=repology depName=alpine_3_22/npm
-    NPM_VERSION=11.6.4-r0 \
-    # renovate: datasource=github-tags depName=ojs packageName=pkp/ojs
-    OJS_VERSION=3_5_0-3 \
-    # renovate: datasource=repology depName=alpine_3_22/php83
-    PHP_VERSION=8.3.29-r0 \
-    # renovate: datasource=repology depName=alpine_3_22/poppler-utils
-    POPPLER_VERSION=25.04.0-r0
+RUN --mount=type=cache,id=custom-ojs-downloads-${TARGETARCH},sharing=locked,target=/opt/downloads \
+    download.sh \
+        --url "${URL}" \
+        --sha256 "${SHA256}" \
+        --strip \
+        --dest "/var/www/ojs" \
+    && \
+    rm -rf .github tests docs && \
+    mkdir -p /var/www/files /var/www/ojs/cache /var/www/ojs/public && \
+    touch /var/www/ojs/opcache_stat.php && \
+    cleanup.sh
 
-RUN apk add --no-cache \
-    antiword=="${ANTIWORD_VERSION}" \
-    ghostscript=="${GHOSTSCRIPT_VERSION}" \
-    npm=="${NPM_VERSION}" \
-    php83-bcmath=="${PHP_VERSION}" \
-    php83-ftp=="${PHP_VERSION}" \
-    php83-gettext=="${PHP_VERSION}" \
-    poppler-utils=="${POPPLER_VERSION}" \
-    && cleanup.sh
-
-
-RUN git clone https://github.com/pkp/ojs.git . \
-    && git checkout "${OJS_VERSION}" \
-    && git submodule update --init --recursive \
-    && rm -rf .github tests docs \
-    && composer -d lib/pkp install \
-    && composer -d plugins/generic/citationStyleLanguage install \
-    && composer -d plugins/paymethod/paypal install \
-    && rm -rf .git \
-    # modify composer.json to be at least a week old so we can run composer install for contrib plugins
-    && NOW=$(date +%s) \
-    && SEVEN_DAYS_AGO=$((NOW - 604800)) \
-    && OLDDATE=$(date -d @"${SEVEN_DAYS_AGO}" +%Y%m%d%H%M.%S) \
-    && find /var/www/ojs/plugins -type f -name "composer.json" -exec touch -t "$OLDDATE" {} \;
-
-RUN npm install \
-    && npm run build \
-    && rm -rf node_modules
-
-RUN chown -R nginx:nginx /var/www/ojs
+COPY --link plugins/ /var/www/ojs/plugins/
 
 ENV \
     DB_HOST=mariadb \
@@ -71,21 +47,10 @@ ENV \
     OJS_ENABLE_BEACON=1 \
     OJS_SESSION_LIFETIME=30 \
     OJS_X_FORWARDED_FOR=Off \
-    OJS_SMTP_SERVER= \
+    OJS_SMTP_SERVER=host.docker.internal \
     OJS_SMTP_PORT=25 \
-    # see https://github.com/Islandora-Devops/isle-buildkit/tree/main/nginx#nginx-settings
-    PHP_MAX_EXECUTION_TIME=300 \
-    PHP_MAX_INPUT_TIME=300 \
-    PHP_DEFAULT_SOCKET_TIMEOUT=300 \
-    PHP_REQUEST_TERMINATE_TIMEOUT=300 \
-    PHP_MEMORY_LIMIT=256M \
-    NGINX_FASTCGI_READ_TIMEOUT=300s \
-    NGINX_FASTCGI_SEND_TIMEOUT=300s \
-    NGINX_FASTCGI_CONNECT_TIMEOUT=300s
+    OJS_DEFAULT_ENVELOPE_SENDER= \
+    OJS_ENABLE_HTTPS=false
 
-COPY --link rootfs /
-
-# run composer install on any plugins added from ./rootfs/var/www/ojs/plugins (files modified within last day)
-RUN find /var/www/ojs/plugins -type f -name "composer.json" -mtime -1 | while read -r COMPOSER_JSON; do \
-    composer install --no-dev --optimize-autoloader -d "$(dirname "$COMPOSER_JSON")"; \
-    done
+RUN chown -R nginx:nginx /var/www/ojs /var/www/files && \
+    cleanup.sh

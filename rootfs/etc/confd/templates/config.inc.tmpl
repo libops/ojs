@@ -329,7 +329,11 @@ sendmail_path = "/usr/sbin/sendmail -bs"
 ; allow_envelope_sender = Off
 
 ; Default envelope sender to use if none is specified elsewhere
+{{ if getenv "OJS_DEFAULT_ENVELOPE_SENDER" }}
+default_envelope_sender = {{ getenv "OJS_DEFAULT_ENVELOPE_SENDER" }}
+{{ else }}
 ; default_envelope_sender = my_address@my_host.com
+{{ end }}
 
 ; Force the default envelope sender (if present)
 ; This is useful if setting up a site-wide no-reply address

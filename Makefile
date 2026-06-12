@@ -1,32 +1,33 @@
-.PHONY: build deps lint run test
+.PHONY: build deps init init-if-needed up down rollout lint run test
 
-DOCKER_IMAGE=ghcr.io/libops/ojs:main
+DOCKER_IMAGE=libops/ojs:php83
 
 deps:
 	docker compose pull --ignore-buildable
 
 build: deps
-	docker compose build
+	docker compose build --pull
 
 lint:
-	@docker compose config --format json| jq -e .services.ojs.image | grep libops
-	@if command -v hadolint > /dev/null 2>&1; then \
-		echo "Running hadolint on Dockerfiles..."; \
-		find . -name "Dockerfile" | xargs hadolint; \
-	else \
-		echo "hadolint not found, skipping Dockerfile validation"; \
-	fi
-	@if command -v json5 > /dev/null 2>&1; then \
-		echo "Running json5 validation on renovate.json5"; \
-		json5 --validate renovate.json5 > /dev/null; \
-	else \
-		echo "json5 not found, skipping renovate validation"; \
-	fi
+	./scripts/lint.sh
 
 
-run: build
-	docker compose up init
-	docker compose up -d
+init: build
+	docker compose run --rm init
 
-test: run
+init-if-needed: build
+	./scripts/init-if-needed.sh
+
+up: init-if-needed
+	docker compose up --remove-orphans -d
+
+down:
+	docker compose down
+
+rollout:
+	./scripts/rollout.sh
+
+run: up
+
+test:
 	./scripts/test.sh

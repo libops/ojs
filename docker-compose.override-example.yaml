@@ -1,0 +1,25 @@
+---
+services:
+  ojs:
+    environment:
+      OJS_SMTP_SERVER: mailpit
+      OJS_SMTP_PORT: "1025"
+    volumes:
+      - ./plugins/blocks:/var/www/ojs/plugins/blocks:rw
+      - ./plugins/gateways:/var/www/ojs/plugins/gateways:rw
+      - ./plugins/generic:/var/www/ojs/plugins/generic:rw
+      - ./plugins/importexport:/var/www/ojs/plugins/importexport:rw
+      - ./plugins/metadata:/var/www/ojs/plugins/metadata:rw
+      - ./plugins/oaiMetadataFormats:/var/www/ojs/plugins/oaiMetadataFormats:rw
+      - ./plugins/paymethod:/var/www/ojs/plugins/paymethod:rw
+      - ./plugins/pubIds:/var/www/ojs/plugins/pubIds:rw
+      - ./plugins/reports:/var/www/ojs/plugins/reports:rw
+      - ./plugins/themes:/var/www/ojs/plugins/themes:rw
+  mariadb:
+    ports:
+      - 3306:3306
+  mailpit:
+    image: axllent/mailpit:v1.26
+    ports:
+      - 1025:1025
+      - 8025:8025

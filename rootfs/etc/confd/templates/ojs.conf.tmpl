@@ -25,7 +25,7 @@ location ~ \.php(/|$) {
         return 404;
     }
 
-    fastcgi_pass unix:/var/run/php-fpm83/php-fpm83.sock;
+    fastcgi_pass unix:{{ getenv "PHP_FPM_SOCKET" }};
     {{ if eq (getenv "OJS_ENABLE_HTTPS") "true" }}
     fastcgi_param HTTPS on;
     fastcgi_param HTTP_SCHEME https;
