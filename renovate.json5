@@ -3,5 +3,18 @@
   extends: [
     'github>libops/renovate-config:default.json5',
   ],
+  packageRules: [
+    {
+      matchDatasources: ['docker'],
+      groupName: 'container images',
+    },
+    {
+      matchPackageNames: ['pkp/ojs'],
+      groupName: 'Open Journal Systems',
+    },
+    {
+      matchDatasources: ['repology'],
+      groupName: 'Alpine packages',
+    },
+  ],
 }
-

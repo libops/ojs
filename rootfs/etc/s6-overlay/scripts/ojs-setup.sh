@@ -50,11 +50,11 @@ function install_ojs {
 
     # POST to the installation endpoint with increased timeout
     echo "Posting installation request..."
-    curl -d "${form_data}" \
+    curl -fsS -d "${form_data}" \
         -H "Content-Type: application/x-www-form-urlencoded" \
         http://localhost/index/en/install/install > /tmp/ojs-install.log 2>&1 && install_success=true || install_success=
 
-    if [ -n "${install_success}" ]; then
+    if [ -n "${install_success}" ] && check_ojs_installed; then
         echo "=========================================="
         echo "OJS Installation Complete!"
         echo "=========================================="
@@ -66,6 +66,7 @@ function install_ojs {
         echo "=========================================="
         cat /tmp/ojs-install.log
         echo "=========================================="
+        exit 1
     fi
 }
 
@@ -77,9 +78,12 @@ function main {
     fi
     if [ "${DB_HOST}" = "mariadb" ]; then
       mysql_create_database
-      install_ojs &
-      echo "OJS installation started."
-      exit 0
+      if check_ojs_installed; then
+        echo "OJS already installed. Skipping installation."
+        set_ojs_installed
+        exit 0
+      fi
+      install_ojs
     fi
 
     set_ojs_installed

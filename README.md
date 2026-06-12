@@ -4,17 +4,13 @@ Dockerized deployment of [Open Journal Systems](https://pkp.sfu.ca/software/ojs/
 
 ## Quick Start
 
-1. Generate secrets:
 ```bash
-docker compose up init
+make up
 ```
 
-2. Start the containers:
-```bash
-docker compose up -d
-```
+Access OJS at `http://localhost`.
 
-3. Access OJS at http://localhost
+`make up` runs `scripts/init-if-needed.sh`, which inspects the rendered Docker Compose config and only runs the `init` service when required secrets or named volumes are missing.
 
 The installation will run automatically on first startup. The default admin credentials are:
 - Username: `admin` (configurable via `OJS_ADMIN_USERNAME`)
@@ -45,10 +41,24 @@ The installation will run automatically on first startup. The default admin cred
 | OJS_ENABLE_BEACON | 1 | environment | Enable PKP usage statistics beacon (1=enabled, 0=disabled) |
 | OJS_SESSION_LIFETIME | 30 | environment | How long to stay logged in (in days) |
 | OJS_X_FORWARDED_FOR | Off | environment | Trust X-Forwarded-For header. Enable PKP usage statistics beacon (Off, On) |
+| OJS_SMTP_SERVER | host.docker.internal | environment | SMTP server for outgoing mail; defaults to the Docker host relay |
+| OJS_SMTP_PORT | 25 | environment | SMTP server port |
+| OJS_DEFAULT_ENVELOPE_SENDER | (empty) | environment | Optional default envelope sender for outgoing mail |
+
+OJS sends mail through the Docker host by default. On LibOps production hosts, the host MTA forwards to the managed relay; for local testing, copy `docker-compose.override-example.yaml` to `docker-compose.override.yaml` to add Mailpit and point OJS at `mailpit:1025`.
 
 ### Nginx and PHP Settings
 
 See https://github.com/Islandora-Devops/isle-buildkit/tree/main/nginx#nginx-settings
+
+## Ingress
+
+Traefik is the only published ingress for the stack. The OJS container listens only on the internal Compose network, while Traefik publishes `${HOST_INSECURE_PORT:-80}` and routes requests to OJS.
+
+`docker-compose.yaml` is the production-shaped default. Local development changes should be copied from `docker-compose.override-example.yaml` to `docker-compose.override.yaml`; the example only exposes MariaDB for debugging and does not change the ingress path.
+
+
+Set `DOMAIN` to the site hostname and `ACME_EMAIL` to the Let's Encrypt registration email before enabling the TLS override.
 
 ## Secrets Management
 
@@ -99,7 +109,7 @@ The following volumes are created for data persistence:
 To update the OJS version, modify the `OJS_VERSION` build argument in the Dockerfile:
 
 ```dockerfile
-ARG OJS_VERSION=3_5_0-1
+ARG OJS_VERSION=3_5_0-3
 ```
 
 Version tags follow the format used in the [PKP OJS repository](https://github.com/pkp/ojs/tags).
@@ -128,8 +138,8 @@ To completely reset and reinstall:
 
 ```bash
 docker compose down -v
-./scripts/generate-secrets.sh
-docker compose up -d
+docker compose run --rm init
+docker compose up --remove-orphans -d
 ```
 
 ## License

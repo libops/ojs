@@ -1,0 +1,14 @@
+---
+services:
+  ojs:
+    environment:
+      OJS_SMTP_SERVER: mailpit
+      OJS_SMTP_PORT: "1025"
+  mariadb:
+    ports:
+      - 3306:3306
+  mailpit:
+    image: axllent/mailpit:v1.26
+    ports:
+      - 1025:1025
+      - 8025:8025
