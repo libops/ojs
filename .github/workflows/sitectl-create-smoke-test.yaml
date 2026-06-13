@@ -21,7 +21,7 @@ jobs:
         include:
           - create_definition: default
             create_args: ""
-    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@main
+    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@8cdff451294d4663695a9f326ec3a38ddd87f573 # main
     with:
       plugin: ojs
       create-definition: ${{ matrix.create_definition }}
