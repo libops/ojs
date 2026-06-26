@@ -11,56 +11,73 @@ CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
 GRANT ALL PRIVILEGES ON ${DB_NAME}.* to '${DB_USER}'@'%';
 FLUSH PRIVILEGES;
 
-SET PASSWORD FOR ${DB_USER}@'%' = PASSWORD('${DB_PASSWORD}')
+SET PASSWORD FOR ${DB_USER}@'%' = PASSWORD('${DB_PASSWORD}');
 EOF
 }
 
 function set_ojs_installed {
-    sed -i 's/installed = Off/installed = On/' /var/www/ojs/config.inc.php
+    sed -i 's/^installed = .*/installed = On/' /var/www/ojs/config.inc.php
     chmod 440 /var/www/ojs/config.inc.php
     touch /installed
 }
 
+function fix_ojs_writable_permissions {
+    local dir=
+    for dir in /var/www/files /var/www/ojs/cache /var/www/ojs/public; do
+        mkdir -p "${dir}"
+        chown -R nginx:nginx "${dir}"
+        find "${dir}" -type d -exec chmod 750 {} +
+        find "${dir}" -type f -exec chmod 640 {} +
+    done
+}
+
+function render_ojs_config {
+    /etc/s6-overlay/scripts/confd-oneshot.sh
+}
+
 function check_ojs_installed {
-    # Check if OJS database tables exist
-    # Query the database for one of the core OJS tables (journals table)
     mysql -h"${DB_HOST}" -u"${DB_USER}" -p"${DB_PASSWORD}" "${DB_NAME}" \
-        -e "SELECT 1 FROM journals LIMIT 1" &>/dev/null
+        -e "SELECT 1 FROM versions WHERE current = 1 AND product_type = 'core' AND product = 'ojs2' LIMIT 1" &>/dev/null
     return $?
 }
 
 function install_ojs {
     echo "OJS not installed. Running installation..."
 
-    # Build form data for installation POST request
-    local form_data="installing=0"
-    form_data="${form_data}&locale=${OJS_LOCALE}"
-    form_data="${form_data}&timeZone=${OJS_TIMEZONE}"
-    form_data="${form_data}&filesDir=${OJS_FILES_DIR}"
-    form_data="${form_data}&databaseDriver=mysqli"
-    form_data="${form_data}&databaseHost=${DB_HOST}"
-    form_data="${form_data}&databaseUsername=${DB_USER}"
-    form_data="${form_data}&databasePassword=${DB_PASSWORD}"
-    form_data="${form_data}&databaseName=${DB_NAME}"
-    form_data="${form_data}&oaiRepositoryId=${OJS_OAI_REPOSITORY_ID}"
-    form_data="${form_data}&enableBeacon=${OJS_ENABLE_BEACON}"
-    form_data="${form_data}&adminUsername=${OJS_ADMIN_USERNAME}"
-    form_data="${form_data}&adminPassword=${OJS_ADMIN_PASSWORD}"
-    form_data="${form_data}&adminPassword2=${OJS_ADMIN_PASSWORD}"
-    form_data="${form_data}&adminEmail=${OJS_ADMIN_EMAIL}"
+    local enable_beacon=n
+    case "${OJS_ENABLE_BEACON}" in
+        1|[Oo][Nn]|[Tt][Rr][Uu][Ee]|[Yy]*)
+            enable_beacon=y
+            ;;
+    esac
 
-    # POST to the installation endpoint with increased timeout
-    echo "Posting installation request..."
-    curl -fsS -d "${form_data}" \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        http://localhost/index/en/install/install > /tmp/ojs-install.log 2>&1 && install_success=true || install_success=
+    echo "Running OJS CLI installer..."
+    {
+        printf '%s\n' "${OJS_LOCALE}"
+        printf '\n'
+        printf '%s\n' "${OJS_FILES_DIR}"
+        printf '%s\n' "${OJS_ADMIN_USERNAME}"
+        printf '%s\n' "${OJS_ADMIN_PASSWORD}"
+        printf '%s\n' "${OJS_ADMIN_PASSWORD}"
+        printf '%s\n' "${OJS_ADMIN_EMAIL}"
+        printf 'mysqli\n'
+        printf '%s\n' "${DB_HOST}"
+        printf '%s\n' "${DB_USER}"
+        printf '%s\n' "${DB_PASSWORD}"
+        printf '%s\n' "${DB_NAME}"
+        printf '%s\n' "${OJS_OAI_REPOSITORY_ID}"
+        printf '%s\n' "${enable_beacon}"
+        printf 'y\n'
+    } | php /var/www/ojs/tools/install.php > /tmp/ojs-install.log 2>&1 && install_success=true || install_success=
 
-    if [ -n "${install_success}" ] && check_ojs_installed; then
+    if [ -n "${install_success}" ] && grep -q "Successfully installed version" /tmp/ojs-install.log && check_ojs_installed; then
         echo "=========================================="
         echo "OJS Installation Complete!"
         echo "=========================================="
         rm /tmp/ojs-install.log
+        render_ojs_config
         set_ojs_installed
+        fix_ojs_writable_permissions
     else
         echo "=========================================="
         echo "OJS Installation Failed!"
@@ -72,21 +89,28 @@ function install_ojs {
 }
 
 function main {
+    if [ ! -f /var/www/ojs/index.php ]; then
+        echo "OJS application files are not present. Skipping OJS setup."
+        return 0
+    fi
+
     # wait for nginx
     if ! timeout 300 wait-for-open-port.sh localhost 80; then
-      echo "Could not connect to nginx at localhost:80"
-      exit 1
+        echo "Could not connect to nginx at localhost:80"
+        exit 1
     fi
     if [ "${DB_HOST}" = "mariadb" ]; then
-      mysql_create_database
-      if check_ojs_installed; then
-        echo "OJS already installed. Skipping installation."
-        set_ojs_installed
-        exit 0
-      fi
-      install_ojs
+        mysql_create_database
+        if check_ojs_installed; then
+            echo "OJS already installed. Skipping installation."
+            set_ojs_installed
+            fix_ojs_writable_permissions
+            exit 0
+        fi
+        install_ojs
     fi
 
     set_ojs_installed
+    fix_ojs_writable_permissions
 }
 main

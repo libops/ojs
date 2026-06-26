@@ -20,6 +20,10 @@ RUN --mount=type=cache,id=custom-ojs-downloads-${TARGETARCH},sharing=locked,targ
         --strip \
         --dest "/var/www/ojs" \
     && \
+    sed -i \
+        -e '/<code function="downloadIPGeoDB"\/>/d' \
+        -e '/<code function="updateRorRegistryDataset"\/>/d' \
+        dbscripts/xml/install.xml && \
     rm -rf .github tests docs && \
     mkdir -p /var/www/files /var/www/ojs/cache /var/www/ojs/public && \
     touch /var/www/ojs/opcache_stat.php && \
