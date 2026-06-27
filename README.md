@@ -4,7 +4,7 @@ LibOps Docker Compose template for running [Open Journal Systems](https://pkp.sf
 
 ## Requirements
 
-- `sitectl` installed on the host that will run the site.
+- [sitectl](https://sitectl.libops.io/install) installed on the host that will run the site.
 - Docker with the Compose v2 plugin installed on the same host.
 
 ## Quick start
@@ -55,7 +55,7 @@ sitectl set upload-limits enabled --max-upload-size 2G --upload-timeout 10m
 sitectl converge
 ```
 
-See the [OJS sitectl plugin docs](https://github.com/libops/sitectl-docs/blob/main/plugins/ojs.mdx) for lifecycle operations, OJS tools, PKP tools, and recurring maintenance.
+See the [OJS sitectl plugin docs](https://sitectl.libops.io/plugins/ojs) for lifecycle operations, OJS tools, PKP tools, and recurring maintenance.
 
 ## Makefile
 
@@ -81,4 +81,4 @@ OJS sends mail through the Docker host by default. For local SMTP testing, use t
 
 ## License
 
-This Docker implementation is provided as-is. Open Journal Systems is licensed under the GNU General Public License v3. See the [OJS repository](https://github.com/pkp/ojs) for details.
+The Docker Compose template and LibOps-specific setup in this repository are licensed under the MIT License. Open Journal Systems is licensed separately under the GNU General Public License v3; see `LICENSE.ojs`.
