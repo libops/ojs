@@ -1,33 +1,21 @@
-.PHONY: build deps init init-if-needed up down rollout lint run test
+SHELL := /bin/bash
 
-DOCKER_IMAGE=libops/ojs:php83
+.PHONY: help rollout test lint
+.SILENT:
 
-deps:
-	docker compose pull --ignore-buildable
+-include custom.Makefile
 
-build: deps
-	docker compose build --pull
+help: ## Show this help message
+	echo 'Usage: make [target]'
+	echo ''
+	echo 'Available targets:'
+	awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%s\033[0m\t%s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort | column -t -s $$'\t'
 
-lint:
-	./scripts/lint.sh
-
-
-init: build
-	docker compose run --rm init
-
-init-if-needed: build
-	./scripts/init-if-needed.sh
-
-up: init-if-needed
-	docker compose up --remove-orphans -d
-
-down:
-	docker compose down
-
-rollout:
+rollout: ## Roll out the currently checked out OJS stack
 	./scripts/rollout.sh
 
-run: up
-
-test:
+test: ## Run template checks
 	./scripts/test.sh
+
+lint: ## Lint template files
+	./scripts/lint.sh
