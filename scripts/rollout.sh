@@ -23,7 +23,7 @@ checkout_ref
 
 docker compose pull --ignore-buildable --quiet || docker compose pull --ignore-buildable || true
 docker compose build --pull
-./scripts/init-if-needed.sh
+docker compose run --rm init
 docker compose up --remove-orphans --wait --pull missing --quiet-pull -d
 
 docker compose exec -T ojs php tools/upgrade.php upgrade || echo "OJS database upgrade skipped or failed"

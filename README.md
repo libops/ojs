@@ -1,6 +1,6 @@
 # Open Journal Systems Docker Template
 
-LibOps Docker Compose template for running [Open Journal Systems](https://pkp.sfu.ca/software/ojs/) with Traefik, MariaDB, and the LibOps OJS PHP/nginx image. Use it with [`sitectl-ojs`](https://github.com/libops/sitectl-ojs).
+The Open Journal Systems Docker Template gives you a Docker Compose repository for running [Open Journal Systems](https://pkp.sfu.ca/software/ojs/). It includes Traefik, MariaDB, and the LibOps OJS PHP/nginx image, and is designed to be managed with [`sitectl-ojs`](https://github.com/libops/sitectl-ojs).
 
 Docs:
 
