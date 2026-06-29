@@ -1,0 +1,12 @@
+http:
+  services:
+    ojs:
+      loadBalancer:
+        servers:
+          - url: "http://ojs:80"
+  routers:
+    ojs-web:
+      rule: 'Host(`localhost`)'
+      entryPoints:
+        - web
+      service: ojs

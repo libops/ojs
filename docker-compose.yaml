@@ -42,17 +42,14 @@ services:
     <<: *common
     image: traefik:v3.6.13@sha256:34d5089d0b414945342848518b383f11f5b3a645504ed87b77ffeb9d683d0e48
     command:
-      - --providers.file.filename=/etc/traefik/dynamic/ojs.yml
+      - --providers.file.directory=/etc/traefik/dynamic
       - --providers.file.watch=true
       - --entrypoints.web.address=:80
       - --entrypoints.web.transport.respondingTimeouts.readTimeout=300s
-    environment:
-      DOMAIN: "${DOMAIN:-localhost}"
-      URI_SCHEME: "${URI_SCHEME:-http}"
     ports:
       - "80:80"
     volumes:
-      - ./conf/traefik/ojs.tmpl:/etc/traefik/dynamic/ojs.yml:ro
+      - ./conf/traefik:/etc/traefik/dynamic:ro
     depends_on:
       ojs:
         condition: service_healthy
@@ -67,13 +64,13 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      OJS_OAI_REPOSITORY_ID: ${DOMAIN:-localhost}
+      OJS_OAI_REPOSITORY_ID: "localhost"
       OJS_ENABLE_BEACON: 1
       OJS_SMTP_SERVER: ${OJS_SMTP_SERVER:-host.docker.internal}
       OJS_SMTP_PORT: "${OJS_SMTP_PORT:-25}"
       OJS_DEFAULT_ENVELOPE_SENDER: ${OJS_DEFAULT_ENVELOPE_SENDER:-}
       OJS_ENABLE_HTTPS: "false"
-      OJS_BASE_URL: "http://${DOMAIN:-localhost}"
+      OJS_BASE_URL: "http://localhost"
     secrets:
       - source: DB_ROOT_PASSWORD
       - source: OJS_API_KEY_SECRET
