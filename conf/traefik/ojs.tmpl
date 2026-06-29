@@ -5,7 +5,7 @@ http:
         servers:
           - url: "http://ojs:80"
   middlewares:
-  {{- if eq (env "TRAEFIK_TLS_ENABLED") "true" }}
+  {{- if eq (env "URI_SCHEME") "https" }}
     ojs-https-redirect:
       redirectScheme:
         scheme: https
@@ -15,12 +15,12 @@ http:
       rule: 'Host(`{{ env "DOMAIN" | default "localhost" }}`)'
       entryPoints:
         - web
-      {{- if eq (env "TRAEFIK_TLS_ENABLED") "true" }}
+      {{- if eq (env "URI_SCHEME") "https" }}
       middlewares:
         - ojs-https-redirect
       {{- end }}
       service: ojs
-  {{- if eq (env "TRAEFIK_TLS_ENABLED") "true" }}
+  {{- if eq (env "URI_SCHEME") "https" }}
     ojs-websecure:
       rule: 'Host(`{{ env "DOMAIN" }}`)'
       entryPoints:
