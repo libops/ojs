@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=libops/ojs:nginx-1.30.3-php84
+ARG BASE_IMAGE=libops/ojs:nginx-1.30.3-php84@sha256:70cb88a96e6335e4a634f9e336c12ddbb958f2ab7cdba7ec3d752b4c6aa7dd0b
 FROM ${BASE_IMAGE}
 
 ARG TARGETARCH
