@@ -6,7 +6,7 @@ http:
           - url: "http://ojs:80"
   routers:
     ojs-web:
-      rule: 'Host(`localhost`)'
+      rule: 'PathPrefix(`/`)'
       entryPoints:
         - web
       service: ojs
