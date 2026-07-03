@@ -69,8 +69,8 @@ services:
       OJS_SMTP_SERVER: ${OJS_SMTP_SERVER:-host.docker.internal}
       OJS_SMTP_PORT: "${OJS_SMTP_PORT:-25}"
       OJS_DEFAULT_ENVELOPE_SENDER: ${OJS_DEFAULT_ENVELOPE_SENDER:-}
-      OJS_ENABLE_HTTPS: "false"
-      OJS_BASE_URL: "http://localhost"
+      INGRESS_HOSTNAMES: "localhost"
+      INGRESS_SCHEME: "http"
     secrets:
       - source: DB_ROOT_PASSWORD
       - source: OJS_API_KEY_SECRET
