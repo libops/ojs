@@ -39,7 +39,6 @@ ENV \
     OJS_SALT=changeme \
     OJS_API_KEY_SECRET=changeme \
     OJS_SECRET_KEY=changeme \
-    OJS_BASE_URL=http://localhost \
     OJS_ADMIN_USERNAME=admin \
     OJS_ADMIN_EMAIL=admin@localhost \
     OJS_ADMIN_PASSWORD=changeme \
@@ -53,7 +52,8 @@ ENV \
     OJS_SMTP_SERVER=host.docker.internal \
     OJS_SMTP_PORT=25 \
     OJS_DEFAULT_ENVELOPE_SENDER= \
-    OJS_ENABLE_HTTPS=false
+    INGRESS_HOSTNAMES=localhost \
+    INGRESS_SCHEME=http
 
 RUN chown -R nginx:nginx /var/www/ojs /var/www/files && \
     cleanup.sh
