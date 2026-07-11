@@ -1,5 +1,9 @@
-.env
-secrets
-!secrets/.keep
+.env*
+certs/*
+!certs/.gitignore
+secrets/*
+!secrets/.gitignore
 docker-compose.override.yml
 docker-compose.override.yaml
+backups/
+acme.json

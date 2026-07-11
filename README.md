@@ -30,7 +30,9 @@ The site is served through Traefik at `http://localhost`. The first boot install
 
 ## Local image build
 
-The `ojs` service builds this checkout on top of the LibOps OJS base image. The Dockerfile downloads the pinned OJS release before copying local plugins so Docker can reuse dependency layers when only site customizations change. Local builds use the platform selected by the Docker CLI and do not push images.
+The `ojs` service builds this checkout on top of the app-versioned LibOps OJS image. OJS core and its application dependencies are already present in that image; this template image only adds the plugins owned by the downstream site. Local builds use the platform selected by the Docker CLI and do not push images.
+
+Docker Compose derives the project name from the checkout directory, so independent forks do not share containers, networks, or named volumes by default. Set `COMPOSE_PROJECT_NAME` explicitly when a stable name is required.
 
 ## Basic Operations
 
@@ -49,19 +51,14 @@ sitectl healthcheck
 sitectl validate
 ```
 
-Update image tags or pin a full image reference with [`sitectl image`](https://sitectl.libops.io/commands/image):
+Update the application base tag or pin that base by digest with [`sitectl image`](https://sitectl.libops.io/commands/image):
 
 ```bash
-sitectl image set --tag ojs=nginx-1.30.3-php84
-sitectl image set --image ojs=libops/ojs:nginx-1.30.3-php84@sha256:...
+sitectl image set --tag ojs=3.5.0-5-php84
+sitectl image set --build-arg ojs.BASE_IMAGE=libops/ojs:3.5.0-5-php84@sha256:...
 ```
 
-Enable local development bind mounts with [`sitectl set`](https://sitectl.libops.io/commands/set), then apply the component change with [`sitectl converge`](https://sitectl.libops.io/commands/converge):
-
-```bash
-sitectl set dev-mode enabled
-sitectl converge
-```
+The image tag starts with the OJS release and ends with the PHP flavor. Updating that base image and rebuilding the derived site image upgrades application core without copying core into the downstream repository. Back up the database, private files, and public files before an application upgrade, then use the OJS plugin rollout so the database upgrade runs with the new core.
 
 Publish a domain, switch HTTP/TLS mode, configure Let's Encrypt, trust upstream proxies, or tune upload limits with the `ingress` component:
 
@@ -69,8 +66,9 @@ Publish a domain, switch HTTP/TLS mode, configure Let's Encrypt, trust upstream 
 sitectl set ingress enabled --mode https-custom --domain ojs.localhost
 sitectl set ingress enabled --mode https-letsencrypt --domain ojs.example.org --acme-email ops@example.org
 sitectl set ingress enabled --trusted-ip 203.0.113.10/32 --max-upload-size 2G --upload-timeout 10m
-sitectl converge
 ```
+
+`sitectl set` applies the requested component change immediately. Use `sitectl converge` when you want an interactive review of the complete component state.
 
 The ingress component writes `INGRESS_HOSTNAMES` as comma-separated hostnames and `INGRESS_SCHEME` as `http` or `https` into the app container. Runtime config is rendered from those values during container startup, so generated sites should not carry separate app URL env vars for the same public route.
 
@@ -91,10 +89,18 @@ Use `sitectl compose ...` and `sitectl set ...` directly for normal stack operat
 ## Template notes
 
 - `traefik` is the only published ingress.
-- `ojs` is built from this repository and based on the LibOps OJS PHP/nginx image.
+- `ojs` is a small downstream customization image based on the app-versioned LibOps OJS image.
 - `mariadb` stores application data.
 - Secrets are generated into `./secrets/`.
 - Custom plugins can be added under `plugins/`.
+
+`OJS_SECRET_KEY` is an application-encryption key, not an arbitrary password. Keep the generated `base64:` value backed by exactly 32 random bytes; replacing it with a different-length string prevents OJS from serving requests, and rotating it can invalidate encrypted application data.
+
+Application core belongs to the base image. Do not copy or bind-mount the complete OJS application tree over the image.
+
+Rebuild and redeploy the derived site image after changing a checked-in plugin. Plugin category directories are intentionally not bind-mounted over the base image because doing so would hide plugins shipped by OJS.
+
+Only MariaDB and the one-shot `database-init` service receive `DB_ROOT_PASSWORD`. The initializer idempotently creates the database and scoped user before OJS starts; the long-running app receives only `OJS_DB_PASSWORD` as `DB_PASSWORD`.
 
 OJS sends mail through the Docker host by default. For local SMTP testing, use the override example to add Mailpit and point OJS at `mailpit:1025`.
 

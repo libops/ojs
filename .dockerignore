@@ -1,5 +1,10 @@
 .git/
-.env
+.github/
+.DS_Store
+.env*
 secrets/
+certs/
+backups/
+acme.json
 docker-compose.override.yml
 docker-compose.override.yaml

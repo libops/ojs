@@ -8,13 +8,5 @@
       matchDatasources: ['docker'],
       groupName: 'container images',
     },
-    {
-      matchPackageNames: ['pkp/ojs'],
-      groupName: 'Open Journal Systems',
-    },
-    {
-      matchDatasources: ['repology'],
-      groupName: 'Alpine packages',
-    },
   ],
 }
