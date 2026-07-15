@@ -21,8 +21,11 @@ jobs:
         include:
           - create_definition: default
             create_args: ""
-    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@578137212ead4ab4059e95df17fa30e9b7ac4aed # main
+    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@55489923a34bd3714d2a1b9c5f8a6c678ea1cbfe # main
     with:
       plugin: ojs
       create-definition: ${{ matrix.create_definition }}
       create-args: ${{ matrix.create_args }}
+      packages: sitectl sitectl-ojs
+      package-versions: sitectl=0.40.0 sitectl-ojs=0.6.0
+      allow-unversioned-packages: false
