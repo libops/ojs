@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=libops/ojs:3.5.0-5-php84@sha256:778ea1281c5eb2aeb841cdd135049e3ecdc9743979e073ffdf71f0e1c264a438
+ARG BASE_IMAGE=libops/ojs:3.5.0-5-php84@sha256:b97670708fdec9cc63b7c5ba9c96b3db547f3ea3e1658ef01bdeba6400aec090
 FROM ${BASE_IMAGE}
 
 WORKDIR /var/www/ojs
