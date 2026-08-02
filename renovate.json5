@@ -3,10 +3,4 @@
   extends: [
     'github>libops/renovate-config:default.json5',
   ],
-  packageRules: [
-    {
-      matchDatasources: ['docker'],
-      groupName: 'container images',
-    },
-  ],
 }

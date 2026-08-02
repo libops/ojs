@@ -27,14 +27,18 @@ secrets:
 
 services:
   init:
-    image: libops/base:3.2.2.0@sha256:d4da77a62c6dead3d52c0e0cc4f38647379d7edd8b2be7b17a2cce06d469b545
+    image: libops/base:3.2.2.0@sha256:851e17742b5fee57038855f46b1a46d2716c0012c5f3a4788b7e5c7bc12fed5e
     restart: no
-    working_dir: /
+    working_dir: /work
+    environment:
+      COMPOSE_FILE: /work/compose.yaml
+      SECRETS_ROOT: /work/secrets
+      SECRET_FORMAT_OJS_SECRET_KEY: laravel-base64
     volumes:
-      - ./secrets:/secrets:rw,z
-      - ./scripts:/scripts:ro,z
-      - ./docker-compose.yaml:/docker-compose.yaml:ro,z
-    command: /scripts/generate-secrets.sh
+      - ./certs:/work/certs:rw,z
+      - ./secrets:/work/secrets:rw,z
+      - ./compose.yaml:/work/compose.yaml:ro,z
+    command: generate-compose-secrets.sh
     profiles: [none]
 
   traefik:
@@ -94,7 +98,7 @@ services:
       start_period: 10m
 
   database-init:
-    image: libops/base:3.2.2.0@sha256:d4da77a62c6dead3d52c0e0cc4f38647379d7edd8b2be7b17a2cce06d469b545
+    image: libops/base:3.2.2.0@sha256:851e17742b5fee57038855f46b1a46d2716c0012c5f3a4788b7e5c7bc12fed5e
     restart: "no"
     networks:
       default:
@@ -109,8 +113,6 @@ services:
       - source: DB_ROOT_PASSWORD
       - source: OJS_DB_PASSWORD
         target: DB_PASSWORD
-    volumes:
-      - ./scripts/init-database.sh:/usr/local/bin/init-database.sh:ro,z
     entrypoint: /usr/local/bin/init-database.sh
     depends_on:
       mariadb:
