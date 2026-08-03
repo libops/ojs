@@ -27,7 +27,7 @@ secrets:
 
 services:
   init:
-    image: libops/base:3.2.2.0@sha256:851e17742b5fee57038855f46b1a46d2716c0012c5f3a4788b7e5c7bc12fed5e
+    image: libops/base:3.2.2.0@sha256:bd4341e08ac0a34b32e03d01fdc0d0fc8f298d6c1aa63384744056b455dc1511
     restart: no
     working_dir: /work
     environment:
@@ -98,7 +98,7 @@ services:
       start_period: 10m
 
   database-init:
-    image: libops/base:3.2.2.0@sha256:851e17742b5fee57038855f46b1a46d2716c0012c5f3a4788b7e5c7bc12fed5e
+    image: libops/base:3.2.2.0@sha256:bd4341e08ac0a34b32e03d01fdc0d0fc8f298d6c1aa63384744056b455dc1511
     restart: "no"
     networks:
       default:
