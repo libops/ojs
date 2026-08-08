@@ -27,3 +27,5 @@ jobs:
       create-definition: ${{ matrix.create_definition }}
       create-args: ${{ matrix.create_args }}
       packages: sitectl sitectl-ojs
+      run-verify: true
+      verify-args: --disposable
