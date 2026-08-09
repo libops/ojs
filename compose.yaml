@@ -38,6 +38,7 @@ services:
       - ./certs:/work/certs:rw,z
       - ./secrets:/work/secrets:rw,z
       - ./compose.yaml:/work/compose.yaml:ro,z
+      - ./scripts/validate-ojs-secret-key.sh:/usr/local/bin/validate-ojs-secret-key.sh:ro,z
     entrypoint: generate-compose-secrets.sh
     profiles: [none]
 
