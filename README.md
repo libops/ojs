@@ -49,7 +49,14 @@ Check the site and context configuration with [`sitectl healthcheck`](https://si
 ```bash
 sitectl healthcheck
 sitectl validate
+sitectl verify --strict
 ```
+
+### Behavioral release gate
+
+`sitectl verify --strict` checks the OJS code/database version pair, scoped database identity, URL/OAI/scheduler/SMTP configuration, OAI-PMH for an enabled journal, and storage access. It is read-only on retained sites. Fresh disposable CI additionally runs `sitectl verify --strict --disposable`, which writes, reads, and removes uniquely named probes in both OJS storage volumes.
+
+Do not use `--disposable` on retained customer data. Passing the container-local gate is not hosted acceptance: verify public DNS/TLS and ingress, real mail delivery, browser authentication, an editorial publication/download flow, and a prior-release upgrade fixture before promotion.
 
 Update the application base tag or pin that base by digest with [`sitectl image`](https://sitectl.libops.io/commands/image):
 
