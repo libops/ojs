@@ -35,20 +35,6 @@ fi
 docker run --rm \
   --volume "${PWD}:/workspace:ro" \
   --workdir /workspace \
-  --entrypoint sh \
+  --entrypoint /workspace/scripts/lint-ojs-php.sh \
   "${image_id}" \
-  -lc '
-    set -eu
-
-    if [ ! -d plugins ]; then
-      echo "No custom OJS plugins directory found; skipping OJS PHP lint."
-      exit 0
-    fi
-
-    if ! find plugins -type f \( -name "*.php" -o -name "*.inc.php" \) | grep -q .; then
-      echo "No custom OJS PHP files found; skipping OJS PHP lint."
-      exit 0
-    fi
-
-    find plugins -type f \( -name "*.php" -o -name "*.inc.php" \) -exec php -l {} \;
-  '
+  scripts plugins

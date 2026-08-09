@@ -86,6 +86,12 @@ services:
     volumes:
       - ojs-files:/var/www/files:rw
       - ojs-public:/var/www/ojs/public:rw
+      - ./scripts/ojs-rollout-readiness.sh:/usr/local/bin/sitectl-ojs-rollout-readiness:ro,z
+      - ./scripts/ojs-verify-database.sh:/usr/local/bin/sitectl-ojs-verify-database:ro,z
+      - ./scripts/ojs-verify-storage.sh:/usr/local/bin/sitectl-ojs-verify-storage:ro,z
+      - ./scripts/ojs-database-config.php:/usr/local/share/libops/sitectl-ojs-database-config.php:ro,z
+      - ./scripts/ojs-runtime-config.php:/usr/local/share/libops/sitectl-ojs-runtime-config.php:ro,z
+      - ./scripts/ojs-verify.sql:/usr/local/share/libops/sitectl-ojs-verify.sql:ro,z
     depends_on:
       database-init:
         condition: service_completed_successfully
